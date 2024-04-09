@@ -10,8 +10,16 @@ const messageChannel = consumer.subscriptions.create("MessageChannel", {
   },
 
   received(data) {
+    const currentUserID = document.body.getAttribute('data-user-id');
+
     const messageDisplay = document.querySelector('#message-display')
     messageDisplay.insertAdjacentHTML('beforeend', this.template(data))
+
+    if (data.user.id == currentUserID) {
+      const messageInput = document.querySelector('#message-input');
+      messageInput.value = '';
+    }
+
   },
   template(data) {
     return `<article class="message">
@@ -19,24 +27,8 @@ const messageChannel = consumer.subscriptions.create("MessageChannel", {
                 <p>${data.user.email}</p>
               </div>
               <div class="message-body">
-                <p>${data.message.body}</p>
+                <p>${data.body}</p>
               </div>
             </article>`
   }
 });
-
-
-document.addEventListener("turbo:load", () => {
-  let form = document.querySelector('#message-form')
-  if (form) {
-    form.addEventListener('submit', (e) => {
-      e.preventDefault()
-      let messageInput = document.querySelector('#message-input').value
-      if (messageInput == '') return;
-      const message = {
-        body: messageInput
-      }
-      messageChannel.send({ message: message })
-    })
-  }
-})

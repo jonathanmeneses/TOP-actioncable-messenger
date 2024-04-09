@@ -1,13 +1,11 @@
-class HangoutsController < ApplicationController
-  def index
-    @messages = Message.includes(:user)
-    @message = Message.new
-  end
+class MessagesController < ApplicationController
 
   def create
     @message = current_user.messages.build(message_params)
     @message.save
+
     ActionCable.server.broadcast('message', @message.as_json(include: :user))
+    Rails.logger.info("Broadcasted message: #{@message}")
   end
 
   private
@@ -15,5 +13,4 @@ class HangoutsController < ApplicationController
   def message_params
     params.require(:message).permit(:body)
   end
-
 end
